@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../features/userSlice";
 import { auth } from "../firebase";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import PlansScreen from "./PlansScreen";
 
 function ProfileScreen() {
   const user = useSelector(selectUser);
@@ -23,6 +24,9 @@ function ProfileScreen() {
             <h2>{user.email}</h2>
             <div className="profileScreen_plans">
               <h3>Plans</h3>
+
+              <PlansScreen />
+
               <button
                 onClick={() => {
                   history.push("/");
