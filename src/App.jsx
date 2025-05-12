@@ -1,34 +1,37 @@
-import { useEffect, useState } from "react";
-import HomeScreen from "./screens/HomeScreen";
+import { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import LoginScreen from "./screens/LoginScreen";
-import { auth } from "./firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout, selectUser } from "./features/userSlice";
+import LoginScreen from "./screens/LoginScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import HomeScreen from "./screens/HomeScreen";
 function App() {
-  const [count, setCount] = useState(0);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((userAuth) => {
-      if (userAuth) {
-        //Logged in
-        dispatch(
-          login({
-            uid: userAuth.uid,
-            email: userAuth.email,
-          })
-        );
-      } else {
-        //Logged out
+    fetch("/api/auth/session", {
+      method: "GET",
+      credentials: "same-origin",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.loggedIn) {
+          dispatch(
+            login({
+              uid: data.id,
+              email: data.email,
+            })
+          );
+        } else {
+          dispatch(logout());
+        }
+      })
+      .catch((err) => {
+        console.error("Session check error:", err);
         dispatch(logout());
-      }
-    });
-
-    return unsubscribe;
+      });
   }, [dispatch]);
 
   return (
@@ -38,7 +41,7 @@ function App() {
           <LoginScreen />
         ) : (
           <Switch>
-            <Route path='/profile'>
+            <Route path="/profile">
               <ProfileScreen />
             </Route>
             <Route exact path="/">

@@ -1,38 +1,59 @@
 import React, { useRef } from "react";
 import "./SignupScreen.css";
-import { auth } from "../firebase";
+
 function SignupScreen() {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
 
-  const register = (e) => {
+  const register = async (e) => {
     e.preventDefault();
-    auth
-      .createUserWithEmailAndPassword(
-        emailRef.current.value,
-        passwordRef.current.value
-      )
-      .then((authUser) => {
-        console.log(authUser);
-      })
-      .catch((error) => {
-        alert(error.message);
+
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        // 注册失败，服务器返回 { msg: "..." }
+        throw new Error(data.msg || "Signup Failed");
+      }
+
+      console.log("Signup Succeed : ", data);
+      // 这里可以 dispatch 登录，或存 token，再跳转主页
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
-  const signIn = (e) => {
+  const signIn = async (e) => {
     e.preventDefault();
-    auth
-      .signInWithEmailAndPassword(
-        emailRef.current.value,
-        passwordRef.current.value
-      )
-      .then((authUser) => {
-        console.log(authUser);
-      })
-      .catch((error) => {
-        alert(error.message);
+
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.msg || "Login Failed");
+      }
+
+      console.log("Login Succeed : ", data);
+      // 存 token 或者 dispatch 登录
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
